@@ -1,7 +1,11 @@
 from tools import (
     add_task,
     list_tasks,
-    remove_task
+    remove_task,
+    complete_task,
+    update_priority,
+    search_tasks,
+    delete_all_tasks
 )
 
 from hooks import (
@@ -26,7 +30,6 @@ langfuse = Langfuse(
 
 
 def approval_node():
-
     return input(
         "Approve action? (yes/no): "
     )
@@ -36,30 +39,34 @@ while True:
 
     command = input(
         "\nWhat would you like to do?\n"
-        "(add/list/remove/exit)\n> "
+        "(add/list/remove/complete/priority/search/delete all/exit)\n> "
     ).strip()
 
-    if command.lower() == "exit":
+    command_lower = command.lower()
+
+    if command_lower == "exit":
 
         print("Goodbye")
 
         break
 
-    decision = approval_node()
-
-    if decision.lower() != "yes":
-
-        print("Action rejected")
-
-        continue
-
-    result = ""
-
-    command_lower = command.lower()
-
     try:
 
-        if command_lower.startswith("add"):
+        result = ""
+
+        if command_lower == "delete all":
+
+            decision = approval_node()
+
+            if decision.lower() != "yes":
+
+                print("Action rejected")
+
+                continue
+
+            result = delete_all_tasks()
+
+        elif command_lower.startswith("add"):
 
             tasks_text = command[3:].strip()
 
@@ -123,6 +130,45 @@ while True:
 
                 result = "\n".join(outputs)
 
+        elif command_lower.startswith("complete"):
+
+            task = command[8:].strip()
+
+            pre_tool_hook(task)
+
+            result = complete_task(task)
+
+            result = post_tool_hook(result)
+
+        elif command_lower.startswith("priority"):
+
+            parts = command.split()
+
+            if len(parts) < 3:
+
+                result = (
+                    "Usage: priority <task> <High/Medium/Low>"
+                )
+
+            else:
+
+                priority = parts[-1]
+
+                task = " ".join(parts[1:-1])
+
+                result = update_priority(
+                    task,
+                    priority
+                )
+
+                result = post_tool_hook(result)
+
+        elif command_lower.startswith("search"):
+
+            keyword = command[6:].strip()
+
+            result = search_tasks(keyword)
+
         elif "list" in command_lower:
 
             result = list_tasks()
@@ -131,7 +177,8 @@ while True:
 
             result = (
                 "Unknown command. "
-                "Use add, list, remove or exit."
+                "Use add, list, remove, complete, "
+                "priority, search, delete all or exit."
             )
 
         save_checkpoint(

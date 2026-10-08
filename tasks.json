@@ -1,6 +1,17 @@
 [
-  "Buy Milk",
-  "Book doctor's appointment",
-  "Prepare deployment report",
-  "Finish AI Assignment"
+  {
+    "task": "Complete Assignment",
+    "completed": true,
+    "priority": "High"
+  },
+  {
+    "task": "build AI agent",
+    "completed": false,
+    "priority": "Medium"
+  },
+  {
+    "task": "Prepare Presentation",
+    "completed": false,
+    "priority": "High"
+  }
 ]
